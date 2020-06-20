@@ -1,0 +1,19 @@
+{
+  "name": "twitch-live",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv-safe": "^8.2.0",
+    "js-yaml": "^3.14.0",
+    "koa": "^2.12.1",
+    "twitch": "^4.0.10",
+    "twitch-webhooks": "^4.0.10"
+  },
+  "type": "module"
+}
