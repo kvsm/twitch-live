@@ -1,12 +1,7 @@
-import Koa from 'koa'
-import yaml from 'js-yaml'
-import fs from 'fs'
-import { exit } from 'process'
-import TwitchClient from 'twitch'
-import dotenv from 'dotenv-safe'
-
-// Load .env environment variables
-dotenv.config()
+const yaml = require('js-yaml')
+const fs = require('fs')
+const { exit } = require('process')
+const TwitchService = require('./TwitchService.js')
 
 // Load Twitch channel names from config
 let channels
@@ -19,13 +14,20 @@ try {
 console.log('Monitoring channels: ', channels)
 
 // Create Twitch client
-const clientId = 
+const clientId = process.env.CLIENT_ID
+const clientSecret = process.env.CLIENT_SECRET
+const twitch = new TwitchService(clientId, clientSecret)
 
+;(async () => {
+  // Check initial status of channels
+  await twitch.setChannels(channels)
 
-const app = new Koa()
+  const statuses = await twitch.getChannelStatuses()
+  channels.forEach((channel) => {
+    const isLive = statuses[channel]
+    console.log(`${channel} is ${isLive ? 'live' : 'offline'}`)
+  })
 
-app.use(async (ctx) => {
-  ctx.body = 'Hello World'
-})
-
-app.listen(3000)
+  // Listen to webhook updates
+  await twitch.subscribeToUpdates()
+})()
