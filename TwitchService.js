@@ -36,7 +36,7 @@ class TwitchService {
     return (await user.getStream()) !== null
   }
 
-  async subscribeToUpdates(callback) {
+  async subscribeToUpdates() {
     this.listener = await WebHookListener.create(this.client, { port: 8090 })
     this.listener.listen()
     for (let i = 0; i < this.channels.length; i++) {
