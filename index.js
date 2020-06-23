@@ -2,7 +2,7 @@ const yaml = require('js-yaml')
 const fs = require('fs')
 const { exit } = require('process')
 const rpio = require('rpio')
-const onDeath = require('death')({ uncaughtException: true })
+const onDeath = require('death')
 const TwitchService = require('./TwitchService.js')
 
 // Init rpio
@@ -15,6 +15,7 @@ PINS.forEach((pin) => {
 // Clean up nicely
 onDeath((signal, err) => {
   PINS.forEach(rpio.close)
+  exit()
 })
 
 // Load Twitch channel names from config
@@ -23,7 +24,7 @@ try {
   channels = yaml.safeLoad(fs.readFileSync('./channels.yml', 'utf8'))
 } catch (e) {
   console.log(e)
-  exit
+  exit()
 }
 console.log('Monitoring channels: ', channels)
 
@@ -61,7 +62,7 @@ const twitch = new TwitchService(clientId, clientSecret)
       console.log(`${user.displayName} just went offline`)
       const idx = channels.indexOf(user.displayName)
       if (idx < PINS.length) {
-        rpio.write(PINS[idx], rpio.HIGH)
+        rpio.write(PINS[idx], rpio.LOW)
         console.log(`Pin ${PINS[idx]} off`)
       }
     }
