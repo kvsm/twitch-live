@@ -7,11 +7,14 @@ const TwitchService = require('./TwitchService.js')
 
 // Init rpio
 rpio.init({ gpiomem: false })
-rpio.open(7, rpio.OUTPUT, rpio.LOW)
+const PINS = [7, 11, 13, 15]
+PINS.forEach((pin) => {
+  rpio.open(pin, rpio.OUTPUT, rpio.LOW)
+})
 
 // Clean up nicely
 onDeath((signal, err) => {
-  rpio.close(7)
+  PINS.forEach(rpio.close)
 })
 
 // Load Twitch channel names from config
@@ -34,9 +37,13 @@ const twitch = new TwitchService(clientId, clientSecret)
   await twitch.setChannels(channels)
 
   const statuses = await twitch.getChannelStatuses()
-  channels.forEach((channel) => {
+  channels.forEach((channel, idx) => {
     const isLive = statuses[channel]
     console.log(`${channel} is ${isLive ? 'live' : 'offline'}`)
+    if (isLive && idx < PINS.length) {
+      rpio.write(PINS[idx], rpio.HIGH)
+      console.log(`Pin ${PINS[idx]} on`)
+    }
   })
 
   // Listen to webhook updates, passing callback
@@ -45,13 +52,17 @@ const twitch = new TwitchService(clientId, clientSecret)
       console.log(
         `${stream.userDisplayName} just went live with title: ${stream.title}`
       )
-      if (stream.userDisplayName == 'dru3th') {
-        rpio.write(7, rpio.HIGH)
+      const idx = channels.indexOf(stream.userDisplayName)
+      if (idx < PINS.length) {
+        rpio.write(PINS[idx], rpio.HIGH)
+        console.log(`Pin ${PINS[idx]} on`)
       }
     } else {
       console.log(`${user.displayName} just went offline`)
-      if (user.displayName == 'dru3th') {
-        rpio.write(7, rpio.LOW)
+      const idx = channels.indexOf(user.displayName)
+      if (idx < PINS.length) {
+        rpio.write(PINS[idx], rpio.HIGH)
+        console.log(`Pin ${PINS[idx]} off`)
       }
     }
   })
