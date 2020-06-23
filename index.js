@@ -1,7 +1,18 @@
 const yaml = require('js-yaml')
 const fs = require('fs')
 const { exit } = require('process')
+const rpio = require('rpio')
+const onDeath = require('death')({ uncaughtException: true })
 const TwitchService = require('./TwitchService.js')
+
+// Init rpio
+rpio.init({ gpiomem: false })
+rpio.open(7, rpio.OUTPUT, rpio.LOW)
+
+// Clean up nicely
+onDeath((signal, err) => {
+  rpio.close(7)
+})
 
 // Load Twitch channel names from config
 let channels
@@ -28,6 +39,20 @@ const twitch = new TwitchService(clientId, clientSecret)
     console.log(`${channel} is ${isLive ? 'live' : 'offline'}`)
   })
 
-  // Listen to webhook updates
-  await twitch.subscribeToUpdates()
+  // Listen to webhook updates, passing callback
+  await twitch.subscribeToUpdates((stream, user) => {
+    if (stream) {
+      console.log(
+        `${stream.userDisplayName} just went live with title: ${stream.title}`
+      )
+      if (stream.userDisplayName == 'dru3th') {
+        rpio.write(7, rpio.HIGH)
+      }
+    } else {
+      console.log(`${user.displayName} just went offline`)
+      if (user.displayName == 'dru3th') {
+        rpio.write(7, rpio.LOW)
+      }
+    }
+  })
 })()

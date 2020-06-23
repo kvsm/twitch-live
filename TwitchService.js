@@ -36,7 +36,7 @@ class TwitchService {
     return (await user.getStream()) !== null
   }
 
-  async subscribeToUpdates() {
+  async subscribeToUpdates(callback) {
     this.listener = await WebHookListener.create(this.client, { port: 8090 })
     this.listener.listen()
     for (let i = 0; i < this.channels.length; i++) {
@@ -45,13 +45,7 @@ class TwitchService {
       const sub = await this.listener.subscribeToStreamChanges(
         user.id,
         async (stream) => {
-          if (stream) {
-            console.log(
-              `${stream.userDisplayName} just went live with title: ${stream.title}`
-            )
-          } else {
-            console.log(`${user.displayName} just went offline`)
-          }
+          callback(stream, user)
         }
       )
       this.subscriptions.push(sub)

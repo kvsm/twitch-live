@@ -10,8 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "death": "^1.1.0",
     "dotenv-safe": "^8.2.0",
     "js-yaml": "^3.14.0",
+    "rpio": "^2.1.1",
     "twitch": "^4.1.0-pre.11",
     "twitch-webhooks": "^4.0.10"
   }
